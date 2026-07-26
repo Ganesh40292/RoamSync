@@ -1,0 +1,19 @@
+@media (max-width: 1024px) {
+  .grid-3-col {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-3-col, .grid-2-col {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sidebar-layout {
+    flex-direction: column !important;
+  }
+
+  .hide-on-mobile {
+    display: none !important;
+  }
+}

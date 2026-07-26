@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: tripsync-ai-backend
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: singapore
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: GEMINI_API_KEY
+        sync: false
+
+databases:
+  - name: tripsync-postgres-db
+    databaseName: tripsyncdb
+    user: tripsyncuser
+    region: singapore
+    plan: free

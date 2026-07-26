@@ -1,0 +1,41 @@
+.expenses-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.expense-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.01);
+  transition: var(--transition-normal);
+}
+
+.expense-row:hover {
+  border-color: var(--primary-color);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.expense-category-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+}
+
+.expense-meta {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.expense-amount {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--success);
+}

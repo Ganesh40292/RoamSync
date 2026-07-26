@@ -1,0 +1,37 @@
+:root {
+  /* Colors */
+  --primary-color: #7c3aed;
+  --primary-hover: #6d28d9;
+  --secondary-color: #06b6d4;
+  --secondary-hover: #0891b2;
+  --dark-bg: #09090b;
+  --card-bg: rgba(24, 24, 27, 0.6);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+
+  /* Font Families */
+  --font-heading: 'Montserrat', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Shadows */
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+[data-theme="light"] {
+  --dark-bg: #f8fafc;
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --border-color: rgba(0, 0, 0, 0.08);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+}

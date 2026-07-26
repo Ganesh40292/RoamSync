@@ -1,0 +1,40 @@
+# Environment variables & secrets (NEVER PUSH TO GITHUB)
+.env
+*.env
+.env.*
+backend/.env
+frontend/.env
+*.pem
+*.key
+*.p12
+*.crt
+*.cert
+
+# Node & Frontend dependencies
+frontend/node_modules/
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+
+# Database dumps & local storage
+*.sql
+*.sqlite
+*.db
+
+# Java Maven build output
+target/
+*.class
+*.jar
+*.war
+
+# IDE & OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
