@@ -30,9 +30,10 @@ export default function TripTimeline({ trip, onReload }) {
     try {
       await tripService.addItinerary(trip.id, {
         dayNumber,
-        activityName,
-        time,
-        locationName,
+        title: activityName.trim(),
+        timeSlot: time.trim(),
+        locationName: locationName.trim(),
+        description: locationName.trim(),
       });
 
       setActivityName('');
@@ -43,7 +44,7 @@ export default function TripTimeline({ trip, onReload }) {
       if (onReload) onReload();
     } catch (err) {
       console.error(err);
-      setError('Failed to add itinerary activity.');
+      setError(err.response?.data?.message || 'Failed to add itinerary activity.');
     }
   };
 
@@ -200,7 +201,7 @@ export default function TripTimeline({ trip, onReload }) {
                             }}
                           >
                             <BadgeIcon size={12} />
-                            {item.time || 'Scheduled'}
+                            {item.timeSlot || item.time || 'Scheduled'}
                           </span>
                         </div>
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem', paddingLeft: '1.5rem' }}>

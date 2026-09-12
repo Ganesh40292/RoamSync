@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: tripsync-ai-backend
+    name: roamsync-backend
     env: docker
     dockerfilePath: Dockerfile
     plan: free
@@ -10,12 +10,13 @@ services:
         value: 8080
       - key: SPRING_PROFILES_ACTIVE
         value: prod
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
       - key: GEMINI_API_KEY
         sync: false
-
-databases:
-  - name: tripsync-postgres-db
-    databaseName: tripsyncdb
-    user: tripsyncuser
-    region: singapore
-    plan: free

@@ -109,16 +109,28 @@ export default function ChatRoom() {
     const client = Stomp.over(socket);
     client.debug = null;
 
-    client.connect({}, () => {
+    const token = localStorage.getItem('token');
+    const connectHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+
+    client.connect(connectHeaders, () => {
       setIsConnected(true);
       stompClientRef.current = client;
 
-      client.subscribe(`/topic/trip/${selectedTripId}`, (msg) => {
-        const chatMsg = JSON.parse(msg.body);
-        setMessages((prev) => [...prev, chatMsg]);
+      client.subscribe(`/topic/trips/${selectedTripId}/chat`, (msg) => {
+        try {
+          const chatMsg = JSON.parse(msg.body);
+          setMessages((prev) => {
+            if (chatMsg.id && prev.some((m) => m.id === chatMsg.id)) {
+              return prev;
+            }
+            return [...prev, chatMsg];
+          });
+        } catch (err) {
+          console.error('Failed to parse incoming WebSocket message', err);
+        }
       });
-    }, () => {
-      console.warn('STOMP server offline. Engaging local simulation fallback.');
+    }, (err) => {
+      console.warn('STOMP connection error or offline:', err);
       setIsConnected(false);
     });
 
@@ -504,7 +516,7 @@ export default function ChatRoom() {
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.25rem' }}>
                     <span className="chat-message-time" style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(msg.timestamp || msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                     {isSelf && <CheckCheck size={12} style={{ color: '#10b981' }} />}
                   </div>

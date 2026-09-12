@@ -26,10 +26,13 @@ public class BudgetAlertScheduler {
 
         for (Trip trip : activeTrips) {
             List<Expense> expenses = expenseRepository.findByTrip(trip);
-            double totalSpent = expenses.stream().mapToDouble(Expense::getAmount).sum();
+            java.math.BigDecimal totalSpent = expenses.stream()
+                    .map(Expense::getAmount)
+                    .filter(java.util.Objects::nonNull)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
 
-            double budgetLimit = 2000.0;
-            if (totalSpent > budgetLimit) {
+            java.math.BigDecimal budgetLimit = new java.math.BigDecimal("2000.00");
+            if (totalSpent.compareTo(budgetLimit) > 0) {
                 log.warn("ALERT: Trip '{}' (ID: {}) has exceeded its budget limit! Total Spent: ${}, Limit: ${}",
                         trip.getName(), trip.getId(), totalSpent, budgetLimit);
             }

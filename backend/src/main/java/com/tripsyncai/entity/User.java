@@ -7,15 +7,19 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = {"password"})
 public class User implements UserDetails {
 
     @Id
@@ -43,6 +47,26 @@ public class User implements UserDetails {
     @Builder.Default
     @Column(nullable = false)
     private String role = "ROLE_USER";
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

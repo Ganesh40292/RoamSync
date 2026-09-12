@@ -19,6 +19,9 @@ public class TripRequest {
     private String endDate;
 
     @Builder.Default
+    private String baseCurrency = "USD";
+
+    @Builder.Default
     private List<String> memberUsernames = new ArrayList<>();
 
     @Builder.Default

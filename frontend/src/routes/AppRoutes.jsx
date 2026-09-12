@@ -27,6 +27,8 @@ import AIPlannerPage from '../pages/Planner/AIPlannerPage';
 // Admin pages
 import AdminDashboard from '../pages/Admin/AdminDashboard';
 
+import TripJoin from '../pages/Trips/TripJoin';
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -36,6 +38,7 @@ export default function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/trips/join" element={<TripJoin />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
 

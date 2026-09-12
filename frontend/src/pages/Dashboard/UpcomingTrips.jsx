@@ -26,7 +26,7 @@ export default function UpcomingTrips({ trips = [] }) {
           trips.slice(0, 3).map((trip) => (
             <div key={trip.id} className="trip-row">
               <div className="trip-row-info">
-                <span className="trip-row-title">{trip.title}</span>
+                <span className="trip-row-title">{trip.name || trip.title || 'Untitled Adventure'}</span>
                 <span className="trip-row-meta">
                   <Calendar size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
                   {dateFormatter.formatShort(trip.startDate)} - {dateFormatter.formatShort(trip.endDate)}

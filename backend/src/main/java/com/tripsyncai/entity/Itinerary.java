@@ -8,10 +8,13 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "itineraries")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = {"trip"})
 public class Itinerary {
 
     @Id
@@ -29,9 +32,18 @@ public class Itinerary {
 
     private String description;
 
+    @Column(name = "location_name")
+    private String locationName;
+
+    @Column(name = "time_slot")
+    private String timeSlot;
+
+    @Column(name = "sort_order", nullable = false)
+    @Builder.Default
+    private Integer sortOrder = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id", nullable = false)
     @JsonIgnore
-    @ToString.Exclude
     private Trip trip;
 }

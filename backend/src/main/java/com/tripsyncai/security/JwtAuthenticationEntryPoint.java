@@ -1,6 +1,7 @@
 package com.tripsyncai.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tripsyncai.dto.ApiErrorResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,11 +12,11 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
@@ -23,14 +24,14 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        final Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now().toString());
-        body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
-        body.put("error", "Unauthorized");
-        body.put("message", authException.getMessage());
-        body.put("path", request.getServletPath());
+        final ApiErrorResponse body = ApiErrorResponse.builder()
+                .timestamp(LocalDateTime.now().toString())
+                .status(HttpServletResponse.SC_UNAUTHORIZED)
+                .code("AUTHENTICATION_REQUIRED")
+                .message("Full authentication is required to access this resource")
+                .path(request.getServletPath())
+                .build();
 
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(response.getOutputStream(), body);
+        objectMapper.writeValue(response.getOutputStream(), body);
     }
 }

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Copy, Check, UserPlus, QrCode, Mail, Link as LinkIcon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Copy, Check, UserPlus, QrCode, Mail, Link as LinkIcon, AlertCircle, RefreshCw } from 'lucide-react';
 import tripService from '../../services/tripService';
 
 export default function InChatInviteModal({ isOpen, onClose, trip, onCompanionAdded }) {
@@ -7,12 +7,34 @@ export default function InChatInviteModal({ isOpen, onClose, trip, onCompanionAd
   const [isCopied, setIsCopied] = useState(false);
   const [statusMsg, setStatusMsg] = useState(null);
   const [activeTab, setActiveTab] = useState('DIRECT'); // 'DIRECT' | 'LINK' | 'QR'
+  const [inviteLink, setInviteLink] = useState('');
+  const [linkLoading, setLinkLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchInviteLink = async () => {
+    if (!trip?.id) return;
+    setLinkLoading(true);
+    try {
+      const data = await tripService.createInvitation(trip.id);
+      setInviteLink(`${window.location.origin}${data.joinUrl}`);
+    } catch (err) {
+      console.error('Failed to generate invite', err);
+      setInviteLink(`${window.location.origin}/trips/join`);
+    } finally {
+      setLinkLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && trip?.id && (activeTab === 'LINK' || activeTab === 'QR') && !inviteLink) {
+      fetchInviteLink();
+    }
+  }, [isOpen, trip?.id, activeTab]);
 
   if (!isOpen || !trip) return null;
 
-  const inviteLink = `${window.location.origin}/trips/join?code=TRIP-${trip.id}`;
-
   const handleCopyLink = () => {
+    if (!inviteLink) return;
     navigator.clipboard.writeText(inviteLink);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 3000);
@@ -22,25 +44,27 @@ export default function InChatInviteModal({ isOpen, onClose, trip, onCompanionAd
     e.preventDefault();
     if (!inviteInput.trim()) return;
 
-    const newMemberObj = { username: inviteInput.trim(), fullName: inviteInput.trim() };
+    const username = inviteInput.trim();
+    setIsSubmitting(true);
+    setStatusMsg(null);
 
     try {
-      await tripService.addMember(trip.id, inviteInput.trim());
-      setStatusMsg({ type: 'success', text: `Added @${inviteInput.trim()} to trip & chat room!` });
+      await tripService.addMember(trip.id, username);
+      setStatusMsg({ type: 'success', text: `Added @${username} to trip!` });
       setInviteInput('');
-      if (onCompanionAdded) onCompanionAdded(newMemberObj);
+      if (onCompanionAdded) onCompanionAdded({ username });
       setTimeout(() => setStatusMsg(null), 4000);
     } catch (err) {
-      console.error(err);
-      setStatusMsg({ type: 'success', text: `Added companion @${inviteInput.trim()} to chat!` });
-      if (onCompanionAdded) onCompanionAdded(newMemberObj);
-      setInviteInput('');
-      setTimeout(() => setStatusMsg(null), 4000);
+      console.error('Failed to add companion', err);
+      const errMsg = err.response?.data?.message || `User @${username} not found or could not be added.`;
+      setStatusMsg({ type: 'error', text: errMsg });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Simple clean SVG QR code rendering
-  const qrSvg = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(inviteLink)}&color=7c3aed&bgcolor=ffffff`;
+  // SVG QR code rendering
+  const qrSvg = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(inviteLink || window.location.href)}&color=7c3aed&bgcolor=ffffff`;
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '1rem' }}>
@@ -78,7 +102,7 @@ export default function InChatInviteModal({ isOpen, onClose, trip, onCompanionAd
             <Mail size={14} /> Add Username
           </button>
           <button
-            onClick={() => setActiveTab('LINK')}
+            onClick={() => { setActiveTab('LINK'); if (!inviteLink) fetchInviteLink(); }}
             style={{
               background: 'none',
               border: 'none',
@@ -94,7 +118,7 @@ export default function InChatInviteModal({ isOpen, onClose, trip, onCompanionAd
             <LinkIcon size={14} /> Copy Link
           </button>
           <button
-            onClick={() => setActiveTab('QR')}
+            onClick={() => { setActiveTab('QR'); if (!inviteLink) fetchInviteLink(); }}
             style={{
               background: 'none',
               border: 'none',
@@ -112,27 +136,43 @@ export default function InChatInviteModal({ isOpen, onClose, trip, onCompanionAd
         </div>
 
         {statusMsg && (
-          <div style={{ padding: '0.6rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', background: 'rgba(16,185,129,0.15)', color: '#a7f3d0', border: '1px solid rgba(16,185,129,0.3)' }}>
+          <div style={{
+            padding: '0.6rem 0.8rem',
+            borderRadius: '6px',
+            fontSize: '0.8rem',
+            background: statusMsg.type === 'error' ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)',
+            color: statusMsg.type === 'error' ? 'var(--danger)' : '#a7f3d0',
+            border: `1px solid ${statusMsg.type === 'error' ? 'var(--danger)' : 'rgba(16,185,129,0.3)'}`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+          }}>
+            {statusMsg.type === 'error' && <AlertCircle size={14} />}
             {statusMsg.text}
           </div>
         )}
 
-        {/* Tab 1: Username / Email Direct Add */}
+        {/* Tab 1: Username Direct Add */}
         {activeTab === 'DIRECT' && (
           <form onSubmit={handleAddCompanion} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Enter companion username or email address:</label>
+            <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Enter companion registered username:</label>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <input
                 type="text"
                 className="form-input"
-                placeholder="e.g. sarah_travels or alex@gmail.com"
+                placeholder="e.g. sarah_travels"
                 value={inviteInput}
                 onChange={(e) => setInviteInput(e.target.value)}
                 style={{ flexGrow: 1, fontSize: '0.85rem' }}
                 required
               />
-              <button type="submit" className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                <UserPlus size={14} /> Add
+              <button
+                type="submit"
+                className="btn-primary"
+                disabled={isSubmitting}
+                style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+              >
+                <UserPlus size={14} /> {isSubmitting ? 'Adding...' : 'Add'}
               </button>
             </div>
           </form>
@@ -142,18 +182,24 @@ export default function InChatInviteModal({ isOpen, onClose, trip, onCompanionAd
         {activeTab === 'LINK' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Shareable Trip Link:</label>
-            <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(255,255,255,0.03)', padding: '0.4rem 0.6rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-              <input
-                type="text"
-                readOnly
-                value={inviteLink}
-                style={{ background: 'none', border: 'none', color: '#fff', fontSize: '0.8rem', flexGrow: 1, outline: 'none' }}
-              />
-              <button onClick={handleCopyLink} className="btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                {isCopied ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
-                {isCopied ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
+            {linkLoading ? (
+              <div style={{ padding: '0.8rem', fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <RefreshCw size={14} className="animate-spin" /> Generating link...
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(255,255,255,0.03)', padding: '0.4rem 0.6rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                <input
+                  type="text"
+                  readOnly
+                  value={inviteLink}
+                  style={{ background: 'none', border: 'none', color: '#fff', fontSize: '0.8rem', flexGrow: 1, outline: 'none' }}
+                />
+                <button onClick={handleCopyLink} className="btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  {isCopied ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
+                  {isCopied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -161,7 +207,7 @@ export default function InChatInviteModal({ isOpen, onClose, trip, onCompanionAd
         {activeTab === 'QR' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0' }}>
             <img src={qrSvg} alt="Scan QR Code" style={{ width: '150px', height: '150px', borderRadius: '12px', padding: '8px', background: '#fff' }} />
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Scan with smartphone camera to join chat instantly</span>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Scan to join trip</span>
           </div>
         )}
 

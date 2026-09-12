@@ -9,10 +9,13 @@ import java.util.List;
 
 @Entity
 @Table(name = "poll_options")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = {"poll", "voters"})
 public class PollOption {
 
     @Id
@@ -25,13 +28,12 @@ public class PollOption {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "poll_id", nullable = false)
     @JsonIgnore
-    @ToString.Exclude
     private Poll poll;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "poll_votes",
-            joinColumns = @JoinColumn(name = "option_id"),
+            joinColumns = @JoinColumn(name = "poll_option_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     @Builder.Default

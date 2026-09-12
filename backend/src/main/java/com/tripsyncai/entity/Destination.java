@@ -6,10 +6,13 @@ import lombok.*;
 
 @Entity
 @Table(name = "destinations")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = {"trip"})
 public class Destination {
 
     @Id
@@ -22,11 +25,11 @@ public class Destination {
     private Double latitude;
     private Double longitude;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id", nullable = false)
     @JsonIgnore
-    @ToString.Exclude
     private Trip trip;
 }

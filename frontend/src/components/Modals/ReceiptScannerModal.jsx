@@ -39,7 +39,8 @@ export default function ReceiptScannerModal({ tripId, isOpen, onClose, onScanCom
       onClose();
     } catch (err) {
       console.error('OCR Error:', err);
-      alert('Failed to scan receipt. Please check file format.');
+      const errMsg = err.response?.data?.message || err.message || 'Failed to scan receipt. Please check file format.';
+      alert(`Receipt OCR Error: ${errMsg}`);
     } finally {
       setIsScanning(false);
     }

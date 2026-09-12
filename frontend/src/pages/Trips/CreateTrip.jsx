@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Calendar, FileText, Compass, Plus, Trash } from 'lucide-react';
+import { Calendar, FileText, Compass, Plus, Trash, DollarSign } from 'lucide-react';
 import tripService from '../../services/tripService';
 import './Trips.css';
 
+const SUPPORTED_CURRENCIES = [
+  { code: 'USD', name: 'USD ($) - US Dollar' },
+  { code: 'EUR', name: 'EUR (€) - Euro' },
+  { code: 'INR', name: 'INR (₹) - Indian Rupee' },
+  { code: 'GBP', name: 'GBP (£) - British Pound' },
+  { code: 'JPY', name: 'JPY (¥) - Japanese Yen' },
+  { code: 'CAD', name: 'CAD ($) - Canadian Dollar' },
+  { code: 'AUD', name: 'AUD ($) - Australian Dollar' },
+];
+
 export default function CreateTrip() {
-  const [title, setTitle] = useState('');
+  const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [baseCurrency, setBaseCurrency] = useState('USD');
   const [invitee, setInvitee] = useState('');
   const [invitees, setInvitees] = useState([]);
   const [error, setError] = useState('');
@@ -29,8 +40,13 @@ export default function CreateTrip() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title || !startDate || !endDate) {
-      setError('Please provide a title and travel dates.');
+    if (!name.trim() || !startDate || !endDate) {
+      setError('Please provide a trip name and travel dates.');
+      return;
+    }
+
+    if (new Date(startDate) > new Date(endDate)) {
+      setError('Start date cannot be after end date.');
       return;
     }
 
@@ -38,25 +54,19 @@ export default function CreateTrip() {
     setError('');
 
     try {
-      const trip = await tripService.createTrip({
-        title,
+      await tripService.createTrip({
+        name: name.trim(),
         description,
         startDate,
         endDate,
+        baseCurrency,
+        memberUsernames: invitees,
       });
-
-      for (const username of invitees) {
-        try {
-          await tripService.inviteMember(trip.id, username);
-        } catch (inviteErr) {
-          console.error(`Failed to invite user: ${username}`, inviteErr);
-        }
-      }
 
       navigate('/trips');
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || 'Failed to create trip. Please verify dates.');
+      setError(err.response?.data?.message || 'Failed to create trip. Please verify your details.');
     } finally {
       setIsLoading(false);
     }
@@ -67,14 +77,14 @@ export default function CreateTrip() {
       <div className="glass-card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         <div>
           <h2 style={{ fontSize: '1.5rem' }}>Plan an Adventure</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Initialize travel durations and bring your friends along!</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Set trip dates, currency, and bring your friends along!</p>
         </div>
 
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div className="input-group">
-            <label className="input-label">Trip Title</label>
+            <label className="input-label">Trip Name</label>
             <div style={{ position: 'relative' }}>
               <Compass size={18} style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-muted)' }} />
               <input
@@ -82,8 +92,8 @@ export default function CreateTrip() {
                 className="form-input"
                 style={{ paddingLeft: '40px', width: '100%' }}
                 placeholder="e.g. Summer in Paris 🗼"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>
@@ -130,6 +140,25 @@ export default function CreateTrip() {
           </div>
 
           <div className="input-group">
+            <label className="input-label">Base Currency</label>
+            <div style={{ position: 'relative' }}>
+              <DollarSign size={18} style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-muted)' }} />
+              <select
+                className="form-input"
+                style={{ paddingLeft: '40px', width: '100%', background: '#1e1b4b', color: '#fff' }}
+                value={baseCurrency}
+                onChange={(e) => setBaseCurrency(e.target.value)}
+              >
+                {SUPPORTED_CURRENCIES.map((curr) => (
+                  <option key={curr.code} value={curr.code}>
+                    {curr.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="input-group">
             <label className="input-label">Invite Friends</label>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <input
@@ -161,7 +190,7 @@ export default function CreateTrip() {
                       gap: '0.5rem',
                     }}
                   >
-                    {username}
+                    @{username}
                     <Trash size={12} style={{ color: 'var(--danger)', cursor: 'pointer' }} onClick={() => handleRemoveInvitee(index)} />
                   </span>
                 ))}

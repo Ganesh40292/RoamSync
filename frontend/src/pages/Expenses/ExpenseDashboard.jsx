@@ -68,20 +68,13 @@ export default function ExpenseDashboard() {
 
     try {
       const currentTrip = trips.find((t) => t.id === parseInt(selectedTripId));
-      const members = currentTrip?.members || [];
-
-      const share = parseFloat(amount) / (members.length || 1);
-      const splits = members.map((m) => ({
-        username: m.username,
-        amountOwed: share,
-      }));
 
       await expenseService.createExpense({
         tripId: parseInt(selectedTripId),
         amount: parseFloat(amount),
         description,
         category,
-        splits,
+        currency: currentTrip?.baseCurrency || currency,
       });
 
       setAmount('');
@@ -91,7 +84,8 @@ export default function ExpenseDashboard() {
       loadExpenses();
     } catch (err) {
       console.error(err);
-      alert('Failed to log expense.');
+      const errMsg = err.response?.data?.message || err.message || 'Failed to log expense.';
+      alert(`Error logging expense: ${errMsg}`);
     }
   };
 
@@ -276,7 +270,13 @@ export default function ExpenseDashboard() {
         </div>
       )}
 
-      {selectedTripId && <DebtSettlementWidget tripId={selectedTripId} currency={currency} />}
+      {selectedTripId && (
+        <DebtSettlementWidget
+          tripId={selectedTripId}
+          currency={currency}
+          onSettlementUpdated={loadExpenses}
+        />
+      )}
 
       {isAdding && (
         <div className="glass-card" style={{ padding: '2rem', maxWidth: '500px', margin: '0 auto', width: '100%' }}>
