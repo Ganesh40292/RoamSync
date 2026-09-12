@@ -1,10 +1,9 @@
 package com.tripsyncai.controller;
 
-import com.tripsyncai.dto.PollResponse;
+import com.tripsyncai.dto.NotificationResponse;
 import com.tripsyncai.entity.User;
 import com.tripsyncai.repository.UserRepository;
-import com.tripsyncai.service.PollService;
-import lombok.Data;
+import com.tripsyncai.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,13 +11,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/trips/{tripId}/polls")
+@RequestMapping("/api/notifications")
 @RequiredArgsConstructor
-public class PollController {
+public class NotificationController {
 
-    private final PollService pollService;
+    private final NotificationService notificationService;
     private final UserRepository userRepository;
 
     private User resolveUser(User authUser, Principal principal) {
@@ -30,40 +30,41 @@ public class PollController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PollResponse>> getPolls(
-            @PathVariable Long tripId,
+    public ResponseEntity<List<NotificationResponse>> getNotifications(
             @AuthenticationPrincipal User authUser,
             Principal principal
     ) {
         User user = resolveUser(authUser, principal);
-        return ResponseEntity.ok(pollService.getPollsForTrip(tripId, user));
+        return ResponseEntity.ok(notificationService.getUserNotifications(user));
     }
 
-    @PostMapping
-    public ResponseEntity<PollResponse> createPoll(
-            @PathVariable Long tripId,
-            @RequestBody CreatePollRequest request,
+    @GetMapping("/unread-count")
+    public ResponseEntity<Map<String, Long>> getUnreadCount(
             @AuthenticationPrincipal User authUser,
             Principal principal
     ) {
         User user = resolveUser(authUser, principal);
-        return ResponseEntity.ok(pollService.createPoll(tripId, request.getQuestion(), request.getOptions(), user));
+        long count = notificationService.getUnreadCount(user);
+        return ResponseEntity.ok(Map.of("unreadCount", count));
     }
 
-    @PostMapping("/vote/{optionId}")
-    public ResponseEntity<PollResponse> vote(
-            @PathVariable Long tripId,
-            @PathVariable Long optionId,
+    @PutMapping("/{id}/read")
+    public ResponseEntity<NotificationResponse> markAsRead(
+            @PathVariable Long id,
             @AuthenticationPrincipal User authUser,
             Principal principal
     ) {
         User user = resolveUser(authUser, principal);
-        return ResponseEntity.ok(pollService.voteInPoll(tripId, optionId, user));
+        return ResponseEntity.ok(notificationService.markAsRead(id, user));
     }
 
-    @Data
-    public static class CreatePollRequest {
-        private String question;
-        private List<String> options;
+    @PutMapping("/read-all")
+    public ResponseEntity<Map<String, String>> markAllAsRead(
+            @AuthenticationPrincipal User authUser,
+            Principal principal
+    ) {
+        User user = resolveUser(authUser, principal);
+        notificationService.markAllAsRead(user);
+        return ResponseEntity.ok(Map.of("message", "All notifications marked as read"));
     }
 }
