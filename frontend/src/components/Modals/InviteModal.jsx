@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Copy, Check, X, UserPlus, AlertCircle, RefreshCw } from 'lucide-react';
 import tripService from '../../services/tripService';
+import QrCodeCanvas from '../Common/QrCodeCanvas';
 
 export default function InviteModal({ trip, isOpen, onClose }) {
   const [copied, setCopied] = useState(false);
@@ -66,25 +67,39 @@ export default function InviteModal({ trip, isOpen, onClose }) {
             <RefreshCw size={16} className="animate-spin" /> Generating secure link...
           </div>
         ) : (
-          <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(255,255,255,0.03)', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)', alignItems: 'center' }}>
-            <input
-              type="text"
-              readOnly
-              value={inviteUrl}
-              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.78rem', width: '100%', outline: 'none' }}
-            />
-            <button
-              onClick={copyToClipboard}
-              className="btn-secondary"
-              style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap' }}
-            >
-              {copied ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
-              {copied ? 'Copied' : 'Copy Link'}
-            </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+            {/* QR Code Canvas */}
+            <div style={{ padding: '0.75rem', background: '#ffffff', borderRadius: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }}>
+              <QrCodeCanvas value={inviteUrl} size={150} />
+              <span style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '6px', fontWeight: 600 }}>
+                Scan to join on mobile camera
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(255,255,255,0.03)', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)', alignItems: 'center', width: '100%' }}>
+              <input
+                type="text"
+                readOnly
+                value={inviteUrl}
+                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.78rem', width: '100%', outline: 'none' }}
+              />
+              <button
+                onClick={copyToClipboard}
+                className="btn-secondary"
+                style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap' }}
+              >
+                {copied ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
+                {copied ? 'Copied' : 'Copy Link'}
+              </button>
+            </div>
+
+            <div style={{ fontSize: '0.72rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <span>⏱️ Invitation code active • Zero user credentials exposed</span>
+            </div>
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '0.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '0.25rem' }}>
           <button onClick={onClose} className="btn-secondary" style={{ padding: '0.4rem 1.25rem', fontSize: '0.85rem' }}>
             Done
           </button>

@@ -1,0 +1,24 @@
+{
+  "name": "RoamMate 🌍 — Next-Gen Collaborative Travel",
+  "short_name": "RoamMate",
+  "description": "Smart collaborative group travel workspace with interactive Google Maps, real-time chat, and AI itinerary planner.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#06b6d4",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/vite.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

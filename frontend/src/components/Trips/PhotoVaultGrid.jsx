@@ -16,7 +16,7 @@ export default function PhotoVaultGrid({ trip }) {
       const newPhoto = {
         id: Date.now(),
         url: URL.createObjectURL(file),
-        caption: file.name,
+        caption: `${file.name} [Local Preview Only]`,
       };
       setPhotos([newPhoto, ...photos]);
     }
@@ -27,7 +27,7 @@ export default function PhotoVaultGrid({ trip }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Image size={20} style={{ color: 'var(--primary-color)' }} />
-          <h4 style={{ fontSize: '1rem' }}>Shared Trip Photo Vault</h4>
+          <h4 style={{ fontSize: '1rem' }}>Shared Trip Photo Vault <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>[Local Preview Only]</span></h4>
         </div>
         <label className="btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer' }}>
           <Upload size={14} /> Upload Memory

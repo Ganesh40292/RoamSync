@@ -22,6 +22,10 @@ public class GeocodingService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    /**
+     * Geocode a location query using OpenStreetMap Nominatim (the sole geocoding provider).
+     * Open-Meteo is reserved strictly for weather data (see WeatherService).
+     */
     public Map<String, Object> geocode(String query) {
         if (query == null || query.trim().isBlank()) {
             throw new IllegalArgumentException("Location query cannot be empty");
@@ -29,48 +33,12 @@ public class GeocodingService {
 
         String location = query.trim();
 
-        // 1. Try Open-Meteo Geocoding API (Fast, reliable, free, zero keys required)
-        try {
-            String encoded = URLEncoder.encode(location, StandardCharsets.UTF_8);
-            String url = "https://geocoding-api.open-meteo.com/v1/search?name=" + encoded + "&count=1&language=en&format=json";
-
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                JsonNode root = objectMapper.readTree(response.getBody());
-                JsonNode results = root.path("results");
-                if (results.isArray() && results.size() > 0) {
-                    JsonNode first = results.get(0);
-                    double lat = first.path("latitude").asDouble();
-                    double lon = first.path("longitude").asDouble();
-                    String name = first.path("name").asText();
-                    String country = first.path("country").asText("");
-                    String admin1 = first.path("admin1").asText("");
-
-                    StringBuilder formatted = new StringBuilder(name);
-                    if (!admin1.isBlank()) formatted.append(", ").append(admin1);
-                    if (!country.isBlank()) formatted.append(", ").append(country);
-
-                    Map<String, Object> result = new HashMap<>();
-                    result.put("lat", lat);
-                    result.put("lng", lon);
-                    result.put("latitude", lat);
-                    result.put("longitude", lon);
-                    result.put("formattedAddress", formatted.toString());
-                    result.put("found", true);
-                    return result;
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Open-Meteo geocoding error for '{}': {}", location, e.getMessage());
-        }
-
-        // 2. Fallback to OpenStreetMap Nominatim
         try {
             String encoded = URLEncoder.encode(location, StandardCharsets.UTF_8);
             String url = "https://nominatim.openstreetmap.org/search?q=" + encoded + "&format=json&limit=1";
 
             HttpHeaders headers = new HttpHeaders();
-            headers.set("User-Agent", "TripSync-AI/1.0 (travel-planner)");
+            headers.set("User-Agent", "RoamSync/1.0");
             HttpEntity<Void> entity = new HttpEntity<>(headers);
 
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);

@@ -24,7 +24,7 @@ export default function TripReviewWidget({ tripId }) {
 
     setSavedReviews([newRev, ...savedReviews]);
     setReviewText('');
-    setStatusMsg('Memory review added to travel journal!');
+    setStatusMsg('Memory review added to travel journal! [Local Session Only]');
     setTimeout(() => setStatusMsg(null), 3500);
   };
 
@@ -32,7 +32,7 @@ export default function TripReviewWidget({ tripId }) {
     <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         <BookOpen size={20} style={{ color: 'var(--primary-color)' }} />
-        <h4 style={{ fontSize: '1rem' }}>Trip Journal & Memory Reviews</h4>
+        <h4 style={{ fontSize: '1rem' }}>Trip Journal & Memory Reviews <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>[Local Session Only]</span></h4>
       </div>
 
       {statusMsg && (

@@ -44,6 +44,9 @@ public class ExpenseFinancialTest {
     @Mock
     private TripAuthorizationService tripAuthorizationService;
 
+    @Mock
+    private SecurityAuditService securityAuditService;
+
     @Spy
     private TripMapper tripMapper = new TripMapper();
 
@@ -64,7 +67,8 @@ public class ExpenseFinancialTest {
                 tripRepository,
                 userRepository,
                 tripAuthorizationService,
-                expenseMapper
+                expenseMapper,
+                securityAuditService
         );
 
         alice = User.builder().id(1L).username("alice").fullName("Alice Smith").build();

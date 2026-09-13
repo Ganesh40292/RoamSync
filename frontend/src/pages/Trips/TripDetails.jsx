@@ -5,7 +5,7 @@ import tripService from '../../services/tripService';
 import TripTimeline from './TripTimeline';
 import TripMembers from './TripMembers';
 import AIPlanner from '../Planner/AIPlanner';
-import RouteMapLeaflet from '../../components/Maps/RouteMapLeaflet';
+import GoogleTripMap from '../../components/Maps/GoogleTripMap';
 import PackingListWidget from '../../components/Trips/PackingListWidget';
 import DebtSettlementWidget from '../../components/Expenses/DebtSettlementWidget';
 import InviteModal from '../../components/Modals/InviteModal';
@@ -13,6 +13,8 @@ import TripPollsWidget from '../../components/Trips/TripPollsWidget';
 import PhotoVaultGrid from '../../components/Trips/PhotoVaultGrid';
 import TripReviewWidget from '../../components/Trips/TripReviewWidget';
 import WeatherForecastWidget from '../../components/Weather/WeatherForecastWidget';
+import PlaceAutocompleteInput from '../../components/Maps/PlaceAutocompleteInput';
+import TripWrappedModal from '../../components/Trips/TripWrappedModal';
 import { exportTripToPdf } from '../../services/pdfExportService';
 import './Trips.css';
 
@@ -21,6 +23,8 @@ export default function TripDetails() {
   const [trip, setTrip] = useState(null);
   const [activeTab, setActiveTab] = useState('ITINERARY');
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [isWrappedOpen, setIsWrappedOpen] = useState(false);
+  const [isAddingDest, setIsAddingDest] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadTrip = async () => {
@@ -38,9 +42,38 @@ export default function TripDetails() {
     loadTrip();
   }, [id]);
 
-  const handleDownloadICal = () => {
-    const token = localStorage.getItem('token');
-    window.open(`/api/trips/${id}/export/ical?token=${token}`, '_blank');
+  const handleDownloadICal = async () => {
+    try {
+      const response = await tripService.exportCalendar(id);
+      const blob = new Blob([response.data], { type: 'text/calendar;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `trip-itinerary-${id}.ics`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Calendar export failed:', err);
+    }
+  };
+
+  const handleAddDestinationFromPlace = async (place) => {
+    try {
+      setIsAddingDest(true);
+      await tripService.addDestination(id, {
+        name: place.displayName,
+        latitude: place.latitude,
+        longitude: place.longitude,
+        description: place.formattedAddress,
+      });
+      await loadTrip();
+    } catch (err) {
+      console.error('Failed to add destination:', err);
+    } finally {
+      setIsAddingDest(false);
+    }
   };
 
   if (isLoading) {
@@ -76,6 +109,9 @@ export default function TripDetails() {
           <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
             <button onClick={() => setIsInviteOpen(true)} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem' }}>
               <UserPlus size={14} /> Invite Friends
+            </button>
+            <button onClick={() => setIsWrappedOpen(true)} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', borderColor: 'var(--primary-color)' }}>
+              <Sparkles size={14} style={{ color: 'var(--primary-color)' }} /> Trip Wrapped
             </button>
             <button onClick={handleDownloadICal} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem' }}>
               <Download size={14} /> iCal Calendar
@@ -158,7 +194,26 @@ export default function TripDetails() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {activeTab === 'ITINERARY' && (
             <>
-              <RouteMapLeaflet destinations={trip.destinations} itineraries={trip.itineraries} />
+              {/* Google Places Autocomplete Destination Adder */}
+              <div className="glass-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <MapPin size={16} style={{ color: 'var(--primary-color)' }} />
+                    Add Stop to Route (Google Places)
+                  </span>
+                  {isAddingDest && (
+                    <span style={{ fontSize: '0.75rem', color: 'var(--primary-color)', fontWeight: 500 }}>
+                      Mapping destination...
+                    </span>
+                  )}
+                </div>
+                <PlaceAutocompleteInput
+                  placeholder="Search landmark, hotel, or attraction with Google Places..."
+                  onSelectPlace={handleAddDestinationFromPlace}
+                />
+              </div>
+
+              <GoogleTripMap destinations={trip.destinations} itineraries={trip.itineraries} />
               <TripTimeline trip={trip} onReload={loadTrip} />
             </>
           )}
@@ -191,6 +246,7 @@ export default function TripDetails() {
       </div>
 
       <InviteModal trip={trip} isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
+      <TripWrappedModal trip={trip} isOpen={isWrappedOpen} onClose={() => setIsWrappedOpen(false)} />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import com.tripsyncai.entity.Trip;
 import com.tripsyncai.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -14,6 +15,7 @@ public class PackingListService {
     private final TripRepository tripRepository;
     private final WeatherService weatherService;
 
+    @Transactional(readOnly = true)
     public Map<String, Object> generatePackingList(Long tripId) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found with id: " + tripId));

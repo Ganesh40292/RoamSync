@@ -84,7 +84,8 @@ public class CrossTripSecurityMatrixTest {
                 tripRepository,
                 userRepository,
                 tripAuthorizationService,
-                expenseMapper
+                expenseMapper,
+                securityAuditService
         );
 
         pollService = new PollService(

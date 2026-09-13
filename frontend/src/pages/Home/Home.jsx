@@ -46,7 +46,7 @@ export default function Home() {
       <header style={{ padding: '1.5rem 2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem', fontWeight: 700, fontFamily: 'var(--font-heading)' }}>
           <Compass size={24} style={{ color: 'var(--primary-color)' }} />
-          <span>TripSync AI 🌍</span>
+          <span>RoamMate 🌍</span>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <Link to="/login" className="btn-secondary" style={{ padding: '0.5rem 1.25rem', fontSize: '0.875rem' }}>Login</Link>
@@ -110,7 +110,7 @@ export default function Home() {
       </section>
 
       <footer style={{ marginTop: 'auto', borderTop: '1px solid var(--border-color)', padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem', position: 'relative', zIndex: 10 }}>
-        &copy; {new Date().getFullYear()} TripSync AI. Crafted for pair travelers worldwide.
+        &copy; {new Date().getFullYear()} RoamMate. Crafted for pair travelers worldwide.
       </footer>
     </div>
   );

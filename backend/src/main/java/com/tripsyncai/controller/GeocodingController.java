@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/geocode")
+@RequestMapping({"/api/geocode", "/api/geocoding"})
 @RequiredArgsConstructor
 public class GeocodingController {
 
     private final GeocodingService geocodingService;
 
-    @GetMapping
+    @GetMapping({"", "/search"})
     public ResponseEntity<Map<String, Object>> geocode(@RequestParam String query) {
         return ResponseEntity.ok(geocodingService.geocode(query));
     }

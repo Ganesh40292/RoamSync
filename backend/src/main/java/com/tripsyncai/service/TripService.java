@@ -292,10 +292,68 @@ public class TripService {
     public TripDetailResponse addItinerary(Long tripId, Itinerary itinerary, User caller) {
         tripAuthorizationService.verifyRole(tripId, caller, TripRole.ORGANIZER);
         Trip trip = getTripEntity(tripId);
+        if (itinerary.getSortOrder() == null) {
+            itinerary.setSortOrder(trip.getItineraries() != null ? trip.getItineraries().size() : 0);
+        }
         itinerary.setTrip(trip);
         trip.getItineraries().add(itinerary);
         Trip updatedTrip = tripRepository.save(trip);
         List<TripMember> members = tripMemberRepository.findByTripId(tripId);
         return tripMapper.toTripDetailResponse(updatedTrip, members);
+    }
+
+    @Transactional
+    public TripDetailResponse updateMemberRole(Long tripId, Long targetUserId, TripRole newRole, User caller) {
+        tripAuthorizationService.verifyOwner(tripId, caller);
+        Trip trip = getTripEntity(tripId);
+
+        if (newRole == TripRole.OWNER) {
+            throw new IllegalArgumentException("Use transferOwnership to assign OWNER role");
+        }
+
+        TripMember targetMember = tripMemberRepository.findByTripIdAndUserId(tripId, targetUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Target user is not a member of this trip"));
+
+        if (targetMember.getRole() == TripRole.OWNER) {
+            throw new IllegalArgumentException("Cannot change the role of the trip owner. Use transferOwnership instead.");
+        }
+
+        TripRole oldRole = targetMember.getRole();
+        targetMember.setRole(newRole);
+        tripMemberRepository.save(targetMember);
+
+        securityAuditService.recordEvent(
+                tripId,
+                caller.getId(),
+                "MEMBER_ROLE_CHANGED",
+                String.format("Role of @%s changed from %s to %s by @%s",
+                        targetMember.getUser().getUsername(), oldRole, newRole, caller.getUsername()),
+                null
+        );
+
+        List<TripMember> members = tripMemberRepository.findByTripId(tripId);
+        return tripMapper.toTripDetailResponse(trip, members);
+    }
+
+    @Transactional
+    public TripDetailResponse addDestination(Long tripId, TripRequest.DestinationInfo destInfo, User caller) {
+        tripAuthorizationService.verifyRole(tripId, caller, TripRole.MEMBER);
+        Trip trip = getTripEntity(tripId);
+
+        Destination destination = Destination.builder()
+                .name(destInfo.getName())
+                .latitude(destInfo.getLatitude())
+                .longitude(destInfo.getLongitude())
+                .description(destInfo.getDescription())
+                .trip(trip)
+                .build();
+
+        if (trip.getDestinations() == null) {
+            trip.setDestinations(new ArrayList<>());
+        }
+        trip.getDestinations().add(destination);
+        Trip saved = tripRepository.save(trip);
+        List<TripMember> members = tripMemberRepository.findByTripId(tripId);
+        return tripMapper.toTripDetailResponse(saved, members);
     }
 }

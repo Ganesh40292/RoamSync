@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Copy, Check, UserPlus, QrCode, Mail, Link as LinkIcon, AlertCircle, RefreshCw } from 'lucide-react';
 import tripService from '../../services/tripService';
+import QrCodeCanvas from '../Common/QrCodeCanvas';
 
 export default function InChatInviteModal({ isOpen, onClose, trip, onCompanionAdded }) {
   const [inviteInput, setInviteInput] = useState('');
@@ -206,8 +207,11 @@ export default function InChatInviteModal({ isOpen, onClose, trip, onCompanionAd
         {/* Tab 3: QR Code */}
         {activeTab === 'QR' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0' }}>
-            <img src={qrSvg} alt="Scan QR Code" style={{ width: '150px', height: '150px', borderRadius: '12px', padding: '8px', background: '#fff' }} />
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Scan to join trip</span>
+            <div style={{ padding: '0.5rem', background: '#fff', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <QrCodeCanvas value={inviteLink || `${window.location.origin}/trips/join`} size={150} />
+            </div>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Scan with mobile camera to join trip</span>
+            <span style={{ fontSize: '0.7rem', color: '#10b981' }}>⏱️ Invitation code active</span>
           </div>
         )}
 

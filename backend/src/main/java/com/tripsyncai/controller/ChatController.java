@@ -40,7 +40,7 @@ public class ChatController {
     private final TripAuthorizationService tripAuthorizationService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("/chat/{tripId}")
+    @MessageMapping({"/trips/{tripId}/chat", "/chat/{tripId}"})
     public void sendMessage(
             @DestinationVariable Long tripId,
             @Payload ChatMessageInput messageInput,

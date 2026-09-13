@@ -94,4 +94,13 @@ public class TripController {
     ) {
         return ResponseEntity.ok(tripService.addItinerary(id, itinerary, caller));
     }
+
+    @PostMapping("/{id}/destinations")
+    public ResponseEntity<TripDetailResponse> addDestination(
+            @PathVariable Long id,
+            @RequestBody TripRequest.DestinationInfo destinationInfo,
+            @AuthenticationPrincipal User caller
+    ) {
+        return ResponseEntity.ok(tripService.addDestination(id, destinationInfo, caller));
+    }
 }

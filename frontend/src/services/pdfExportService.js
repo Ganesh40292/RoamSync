@@ -19,7 +19,7 @@ export const exportTripToPdf = (trip) => {
     <!DOCTYPE html>
     <html>
       <head>
-        <title>TripSync AI — ${trip.name} Travel Booklet</title>
+        <title>RoamMate — ${trip.name} Travel Booklet</title>
         <style>
           body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; color: #1f2937; }
           .header { text-align: center; border-bottom: 2px solid #7c3aed; padding-bottom: 20px; margin-bottom: 30px; }
@@ -35,7 +35,7 @@ export const exportTripToPdf = (trip) => {
       <body>
         <div class="header">
           <h1 class="title">🌍 ${trip.name}</h1>
-          <p class="subtitle">Official TripSync AI Travel Companion Booklet</p>
+          <p class="subtitle">Official RoamMate 🌍 Travel Companion Booklet</p>
         </div>
 
         <div class="meta-grid">
@@ -53,7 +53,7 @@ export const exportTripToPdf = (trip) => {
         </div>
 
         <div class="footer">
-          Generated automatically by <strong>TripSync AI</strong> • Safe Travels!
+          Generated automatically by <strong>RoamMate 🌍</strong> • Safe Travels!
         </div>
         <script>
           window.onload = function() { window.print(); }

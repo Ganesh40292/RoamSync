@@ -71,7 +71,7 @@ export default function ChatRoom() {
   const getWelcomeMessage = () => [
     {
       id: 1,
-      sender: { username: 'Gemini AI Assistant', fullName: 'TripSync AI Bot' },
+      sender: { username: 'Gemini AI Assistant', fullName: 'RoamMate Bot' },
       content: '👋 Welcome to Next-Level Chat! Use the channel bar above to switch between # Group Channel and Direct 1-on-1 DMs with companions. Ask @AI Concierge anytime for travel advice!',
       timestamp: new Date().toISOString(),
       isAi: true,
@@ -165,7 +165,7 @@ export default function ChatRoom() {
         const voiceMsg = {
           id: Date.now(),
           sender: { username: user?.username || 'Guest', fullName: user?.fullName || 'Guest' },
-          content: `🎙️ Voice Note (${recordingTime}s)`,
+          content: `🎙️ Voice Note (${recordingTime}s) [Local Preview Only]`,
           audioUrl,
           timestamp: new Date().toISOString(),
         };
@@ -194,7 +194,7 @@ export default function ChatRoom() {
       const voiceMsg = {
         id: Date.now(),
         sender: { username: user?.username || 'Guest', fullName: user?.fullName || 'Guest' },
-        content: `🎙️ Voice Note (Simulated 5s)`,
+        content: `🎙️ Voice Note (Simulated 5s) [Local Preview Only]`,
         timestamp: new Date().toISOString(),
       };
       if (activeChannel === 'GROUP') {
@@ -221,7 +221,11 @@ export default function ChatRoom() {
     if (!newMessage.trim()) return;
 
     const userText = newMessage.trim();
-    const isAiQuery = userText.toLowerCase().startsWith('@ai') || userText.toLowerCase().includes('gemini');
+    const isAiQuery =
+      userText.toLowerCase().includes('@roambot') ||
+      userText.toLowerCase().includes('@ai') ||
+      userText.toLowerCase().startsWith('/ai') ||
+      userText.toLowerCase().startsWith('roambot');
 
     const payload = {
       content: userText,
@@ -237,7 +241,7 @@ export default function ChatRoom() {
 
     if (activeChannel === 'GROUP') {
       if (isConnected && stompClientRef.current) {
-        stompClientRef.current.send(`/app/chat/${selectedTripId}`, {}, JSON.stringify(payload));
+        stompClientRef.current.send(`/app/trips/${selectedTripId}/chat`, {}, JSON.stringify(payload));
       } else {
         const userMsg = {
           id: Date.now(),
@@ -270,22 +274,23 @@ export default function ChatRoom() {
     if (isAiQuery) {
       setIsAiThinking(true);
       try {
-        const currentTrip = trips.find((t) => t.id === parseInt(selectedTripId));
-        const aiPrompt = userText.replace(/@ai/gi, '').trim() || 'Provide top travel tips for our trip';
-        const aiRes = await aiService.generateItinerary({
-          destination: currentTrip?.name || currentTrip?.title || 'Karnataka',
-          durationDays: 3,
-          budget: 'Medium',
-          interests: [aiPrompt],
-        });
+        const cleanPrompt = userText
+          .replace(/@roambot/gi, '')
+          .replace(/@ai/gi, '')
+          .replace(/\/ai/gi, '')
+          .replace(/^roambot/gi, '')
+          .trim() || 'What are your top recommendations for our trip?';
+
+        const aiRes = await aiService.askRoamBot(selectedTripId, cleanPrompt);
 
         const aiReply = {
           id: Date.now() + 1,
-          sender: { username: 'Gemini AI Assistant', fullName: 'TripSync AI Bot' },
-          content: `🤖 AI Travel Tip: ${aiRes?.tripOverview || 'Here are top recommendations for your trip in Karnataka! Explore iconic heritage spots, try filter coffee, and check local weather.'}`,
-          timestamp: new Date().toISOString(),
+          sender: { username: 'RoamBot 🤖', fullName: 'RoamBot AI Concierge' },
+          content: aiRes?.content || 'Here are tips for your adventure!',
+          timestamp: aiRes?.timestamp || new Date().toISOString(),
           isAi: true,
         };
+
         if (activeChannel === 'GROUP') {
           setMessages((prev) => [...prev, aiReply]);
         } else {
@@ -295,7 +300,23 @@ export default function ChatRoom() {
           }));
         }
       } catch (err) {
-        console.error('AI chat response error', err);
+        console.error('RoamBot error:', err);
+        const errMsg = err.response?.data?.message || 'RoamBot rate limit reached or server busy. Please wait a moment.';
+        const errReply = {
+          id: Date.now() + 1,
+          sender: { username: 'RoamBot 🤖', fullName: 'RoamBot AI Concierge' },
+          content: `⚠️ ${errMsg}`,
+          timestamp: new Date().toISOString(),
+          isAi: true,
+        };
+        if (activeChannel === 'GROUP') {
+          setMessages((prev) => [...prev, errReply]);
+        } else {
+          setDmMessages((prev) => ({
+            ...prev,
+            [activeChannel]: [...(prev[activeChannel] || []), errReply],
+          }));
+        }
       } finally {
         setIsAiThinking(false);
       }
@@ -310,7 +331,7 @@ export default function ChatRoom() {
     const imgMsg = {
       id: Date.now(),
       sender: { username: user?.username || 'Guest', fullName: user?.fullName || 'Guest' },
-      content: `📷 Shared photo: ${file.name}`,
+      content: `📷 Shared photo: ${file.name} [Local Preview Only]`,
       imageUrl,
       timestamp: new Date().toISOString(),
     };

@@ -31,6 +31,7 @@ public class ExpenseService {
     private final UserRepository userRepository;
     private final TripAuthorizationService tripAuthorizationService;
     private final ExpenseMapper expenseMapper;
+    private final SecurityAuditService securityAuditService;
 
     @Transactional
     public ExpenseResponse addExpense(Long tripId, ExpenseRequest request, User caller) {
@@ -320,6 +321,19 @@ public class ExpenseService {
             settlement.setStatus("SETTLED");
             settlement.setSettledAt(LocalDateTime.now());
             settlementRepository.save(settlement);
+
+            securityAuditService.recordEvent(
+                    tripId,
+                    caller.getId(),
+                    "SETTLEMENT_COMPLETED",
+                    String.format("Settlement #%d marked settled by @%s: %s owes %s %s %s",
+                            settlementId, caller.getUsername(),
+                            settlement.getDebtor().getUsername(),
+                            settlement.getCreditor().getUsername(),
+                            settlement.getAmount(), settlement.getCurrency()),
+                    null
+            );
+
             syncSimplifiedSettlements(tripId);
         }
 

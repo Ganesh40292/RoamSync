@@ -1,5 +1,5 @@
 export const constants = {
-  APP_NAME: 'TripSync AI',
+  APP_NAME: 'RoamMate 🌍',
   SUPPORT_EMAIL: 'support@tripsyncai.com',
   EXPENSE_CATEGORIES: ['FOOD', 'TRANSPORT', 'LODGING', 'ENTERTAINMENT', 'SHOPPING', 'OTHER'],
   TRAVEL_STYLES: ['Adventure', 'Relaxed', 'Budget', 'Luxury', 'Balanced'],

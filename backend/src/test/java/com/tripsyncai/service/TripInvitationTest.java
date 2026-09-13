@@ -88,7 +88,7 @@ class TripInvitationTest {
         assertTrue(response.getJoinUrl().contains(response.getInviteToken()));
         assertEquals("ACTIVE", response.getStatus());
 
-        verify(securityAuditService).recordEvent(eq(100L), eq(1L), eq("INVITATION_CREATED"), anyString(), isNull());
+        verify(securityAuditService).recordEvent(eq(100L), eq(1L), eq("INVITE_CREATED"), anyString(), isNull());
     }
 
     @Test
@@ -146,7 +146,7 @@ class TripInvitationTest {
         when(tripInvitationRepository.findByTokenHashAndStatus(tokenHash, "ACTIVE")).thenReturn(Optional.of(invitation));
         when(tripMemberRepository.existsByTripIdAndUserId(100L, 2L)).thenReturn(false);
 
-        Map<String, Object> result = tripInvitationService.joinTrip(new JoinTripRequest(rawToken), joiningUser);
+        Map<String, Object> result = tripInvitationService.joinTrip(JoinTripRequest.builder().code(rawToken).build(), joiningUser);
 
         assertNotNull(result);
         assertEquals("Successfully joined the trip!", result.get("message"));
@@ -159,6 +159,6 @@ class TripInvitationTest {
                 member.getRole() == TripRole.MEMBER
         ));
 
-        verify(securityAuditService).recordEvent(eq(100L), eq(2L), eq("MEMBER_JOINED_VIA_INVITATION"), anyString(), isNull());
+        verify(securityAuditService).recordEvent(eq(100L), eq(2L), eq("INVITE_REDEEMED"), anyString(), isNull());
     }
 }

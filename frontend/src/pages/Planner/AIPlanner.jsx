@@ -137,9 +137,7 @@ export default function AIPlanner({ trip, onReload }) {
           await tripService.addItinerary(targetTripId, {
             dayNumber: parseInt(dayNum),
             title: act.activity || act,
-            activityName: act.activity || act,
             timeSlot: act.time || 'Morning',
-            time: act.time || 'Morning',
             locationName: act.venue || destination,
             description: act.description || (act.venue ? `Location: ${act.venue}` : ''),
           });

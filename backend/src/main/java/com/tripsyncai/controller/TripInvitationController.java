@@ -31,7 +31,7 @@ public class TripInvitationController {
     }
 
     @GetMapping("/join/preview")
-    public ResponseEntity<TripJoinPreviewResponse> previewInvitation(@RequestParam("token") String token) {
+    public ResponseEntity<TripJoinPreviewResponse> previewInvitation(@RequestParam("code") String token) {
         return ResponseEntity.ok(tripInvitationService.previewInvitation(token));
     }
 

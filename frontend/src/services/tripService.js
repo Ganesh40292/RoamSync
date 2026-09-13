@@ -61,6 +61,21 @@ export const tripService = {
     const response = await axios.post(`${API_URL}/${tripId}/itineraries`, itineraryData, getHeaders());
     return response.data;
   },
+
+  addDestination: async (tripId, destinationData) => {
+    const response = await axios.post(`${API_URL}/${tripId}/destinations`, destinationData, getHeaders());
+    return response.data;
+  },
+
+  exportCalendar: async (tripId) => {
+    const token = localStorage.getItem('token');
+    return axios.get(`${API_URL}/${tripId}/export/ical`, {
+      responseType: 'blob',
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+  },
 };
 
 export default tripService;

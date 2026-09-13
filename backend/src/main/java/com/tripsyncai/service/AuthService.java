@@ -33,6 +33,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final SecurityAuditService securityAuditService;
 
     public AuthResponse register(AuthRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
@@ -140,6 +141,15 @@ public class AuthService {
         passwordResetTokenRepository.save(resetToken);
 
         log.info("Password successfully reset for user: {}", user.getUsername());
+
+        securityAuditService.recordEvent(
+                null,
+                user.getId(),
+                "PASSWORD_RESET_COMPLETED",
+                String.format("Password reset completed for user @%s", user.getUsername()),
+                null
+        );
+
         return Map.of("message", "Password has been successfully reset. You can now log in.");
     }
 }

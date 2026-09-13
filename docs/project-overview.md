@@ -1,7 +1,7 @@
-# TripSync AI 🌍 — System Overview & Architecture Blueprint
+# RoamMate 🌍 — System Overview & Architecture Blueprint
 
 ## 📖 Introduction
-**TripSync AI** is a collaborative, real-time travel planning platform designed to unify every aspect of trip planning into a single, cohesive experience. From mapping out complex daily itineraries to managing shared expenses and communicating with fellow travelers, TripSync AI replaces fragmented workflows with a modern, high-performance web app.
+**RoamMate 🌍** is a collaborative, real-time travel planning platform designed to unify every aspect of trip planning into a single, cohesive experience. From mapping out complex daily itineraries to managing shared expenses and communicating with fellow travelers, RoamMate replaces fragmented workflows with a modern, high-performance web app.
 
 ---
 

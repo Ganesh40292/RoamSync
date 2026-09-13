@@ -1,6 +1,6 @@
-# TripSync AI 🌍 — Product Feature Roadmap
+# RoamMate 🌍 — Product Feature Roadmap
 
-This roadmap establishes the implementation phases, detailing the execution timeline for the core product features and future strategic enhancements of **TripSync AI**.
+This roadmap establishes the implementation phases, detailing the execution timeline for the core product features and future strategic enhancements of **RoamMate 🌍**.
 
 ---
 

@@ -7,7 +7,7 @@ import './Trips.css';
 
 export default function TripJoin() {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
+  const token = searchParams.get('code') || searchParams.get('token');
   const navigate = useNavigate();
 
   const [preview, setPreview] = useState(null);
@@ -27,7 +27,7 @@ export default function TripJoin() {
 
     async function fetchPreview() {
       try {
-        const res = await axios.get(`/api/trips/join/preview?token=${encodeURIComponent(token)}`);
+        const res = await axios.get(`/api/trips/join/preview?code=${encodeURIComponent(token)}`);
         setPreview(res.data);
       } catch (err) {
         console.error('Failed to preview invitation', err);
@@ -43,7 +43,7 @@ export default function TripJoin() {
 
   const handleJoin = async () => {
     if (!isLoggedIn) {
-      navigate(`/login?redirect=${encodeURIComponent(`/trips/join?token=${token}`)}`);
+      navigate(`/login?redirect=${encodeURIComponent(`/trips/join?code=${token}`)}`);
       return;
     }
 
@@ -53,7 +53,7 @@ export default function TripJoin() {
       const authToken = localStorage.getItem('token');
       const res = await axios.post(
         '/api/trips/join',
-        { token },
+        { code: token },
         {
           headers: { Authorization: `Bearer ${authToken}` },
         }

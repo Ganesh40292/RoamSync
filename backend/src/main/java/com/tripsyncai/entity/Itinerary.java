@@ -27,7 +27,6 @@ public class Itinerary {
     @Column(name = "activity_date")
     private LocalDate activityDate;
 
-    @com.fasterxml.jackson.annotation.JsonAlias({"activityName", "activity"})
     @Column(nullable = false)
     private String title;
 
@@ -36,7 +35,6 @@ public class Itinerary {
     @Column(name = "location_name")
     private String locationName;
 
-    @com.fasterxml.jackson.annotation.JsonAlias({"time", "timeOfDay"})
     @Column(name = "time_slot")
     private String timeSlot;
 
@@ -48,4 +46,11 @@ public class Itinerary {
     @JoinColumn(name = "trip_id", nullable = false)
     @JsonIgnore
     private Trip trip;
+
+    @jakarta.persistence.PrePersist
+    public void prePersist() {
+        if (sortOrder == null) {
+            sortOrder = 0;
+        }
+    }
 }

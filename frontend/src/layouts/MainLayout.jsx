@@ -18,6 +18,18 @@ export default function MainLayout({ children }) {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -54,7 +66,7 @@ export default function MainLayout({ children }) {
       {/* Sidebar Navigation */}
       <aside className="sidebar glass-card" style={{ zIndex: 10 }}>
         <div className="sidebar-brand">
-          <h2>TripSync AI 🌍</h2>
+          <h2>RoamMate 🌍</h2>
         </div>
 
         <nav className="sidebar-nav">
@@ -97,6 +109,11 @@ export default function MainLayout({ children }) {
 
       {/* Main Content Area */}
       <main className="main-content" style={{ zIndex: 10, paddingBottom: '5rem' }}>
+        {!isOnline && (
+          <div style={{ background: '#b45309', color: '#fef3c7', padding: '0.45rem 1rem', borderRadius: '10px', marginBottom: '1rem', fontSize: '0.8rem', textAlign: 'center', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+            <span>📡 Offline Mode — showing cached app shell. Some trip data may be unavailable until reconnected.</span>
+          </div>
+        )}
         <header className="content-header glass-card" style={{ position: 'relative', zIndex: 100, overflow: 'visible' }}>
           <h1>{navItems.find((n) => location.pathname.startsWith(n.path))?.name || 'Welcome'}</h1>
           <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative', zIndex: 101 }}>

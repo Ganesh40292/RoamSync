@@ -35,6 +35,9 @@ class AuthPasswordResetTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private SecurityAuditService securityAuditService;
+
     @InjectMocks
     private AuthService authService;
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import axios from 'axios';
 import { DollarSign, Plus, Camera, AlertTriangle, Search, Filter, PieChart as ChartIcon, CheckCircle2, User, Download } from 'lucide-react';
 import tripService from '../../services/tripService';
 import expenseService from '../../services/expenseService';
@@ -30,6 +31,23 @@ export default function ExpenseDashboard() {
   const [statusMsg, setStatusMsg] = useState('');
 
   const plannedBudgetLimit = 1500; // Simulated planned budget cap
+
+  const [rateInfo, setRateInfo] = useState(null);
+
+  useEffect(() => {
+    async function loadRates() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('/api/currency/rates?base=USD', {
+          headers: { Authorization: token ? `Bearer ${token}` : '' },
+        });
+        setRateInfo(res.data);
+      } catch (e) {
+        console.error('Failed to load currency rates', e);
+      }
+    }
+    loadRates();
+  }, []);
 
   useEffect(() => {
     async function loadTrips() {
@@ -136,6 +154,12 @@ export default function ExpenseDashboard() {
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <CurrencySelector value={currency} onChange={setCurrency} />
+          {rateInfo && currency !== 'USD' && rateInfo.rates?.[currency] && (
+            <span style={{ fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(16,185,129,0.1)', padding: '0.3rem 0.6rem', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.2)' }}>
+              <span>1 USD = {rateInfo.rates[currency]} {currency}</span>
+              <span style={{ color: 'var(--text-muted)' }}>• {rateInfo.source}</span>
+            </span>
+          )}
           <select
             className="form-input"
             style={{ padding: '0.5rem 1rem', background: 'var(--dark-bg)', color: 'var(--text-primary)' }}

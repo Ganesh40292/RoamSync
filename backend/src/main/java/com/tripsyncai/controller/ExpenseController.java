@@ -3,10 +3,12 @@ package com.tripsyncai.controller;
 import com.tripsyncai.dto.ExpenseRequest;
 import com.tripsyncai.dto.ExpenseResponse;
 import com.tripsyncai.dto.SettlementResponse;
+import com.tripsyncai.entity.TripRole;
 import com.tripsyncai.entity.User;
 import com.tripsyncai.repository.UserRepository;
 import com.tripsyncai.service.ExpenseService;
 import com.tripsyncai.service.ReceiptOcrService;
+import com.tripsyncai.service.TripAuthorizationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,7 @@ public class ExpenseController {
     private final ExpenseService expenseService;
     private final ReceiptOcrService receiptOcrService;
     private final UserRepository userRepository;
+    private final TripAuthorizationService tripAuthorizationService;
 
     private User resolveUser(User authUser, Principal principal) {
         if (authUser != null) return authUser;
@@ -91,8 +94,12 @@ public class ExpenseController {
     @PostMapping("/ocr")
     public ResponseEntity<Map<String, Object>> scanReceipt(
             @PathVariable Long tripId,
-            @RequestParam("file") MultipartFile file
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal User authUser,
+            Principal principal
     ) {
+        User user = resolveUser(authUser, principal);
+        tripAuthorizationService.verifyRole(tripId, user, TripRole.MEMBER);
         return ResponseEntity.ok(receiptOcrService.parseReceipt(file));
     }
 }
